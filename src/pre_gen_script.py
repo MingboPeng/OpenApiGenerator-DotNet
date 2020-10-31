@@ -31,8 +31,16 @@ with open(config_file, "w") as jsonFile:
 
 def cleanup(projectName):
     root = os.path.dirname(os.path.dirname(__file__))
+    # remove docs
+    target_folder = os.path.join(root, 'docs')
+    if os.path.exists(target_folder):
+        shutil.rmtree(target_folder)
     # remove Model folder
     target_folder = os.path.join(root, 'src', projectName, 'Model')
+    if os.path.exists(target_folder):
+        shutil.rmtree(target_folder)
+    # remove interface
+    target_folder = os.path.join(root, 'src', projectName, 'interface')
     if os.path.exists(target_folder):
         shutil.rmtree(target_folder)
 

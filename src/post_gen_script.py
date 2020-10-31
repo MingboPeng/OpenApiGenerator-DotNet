@@ -6,7 +6,7 @@ import re
 import time
 
 
-def get_package_name(config_json_path):
+def get_package_name():
     config_file = os.path.join(os.getcwd(), 'openapi-config.json')
     with open(config_file, "r") as jsonFile:
         config_data = json.load(jsonFile)
