@@ -8,8 +8,7 @@ import json
 
 
 def get_package_name(config_json_path):
-    dir = os.path.dirname(os.path.abspath(__file__))
-    config_file = os.path.join(dir, 'config.json')
+    config_file = os.path.join(os.getcwd(), 'openapi-config.json')
     with open(config_file, "r") as jsonFile:
         config_data = json.load(jsonFile)
 
