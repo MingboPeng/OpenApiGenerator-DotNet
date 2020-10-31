@@ -1,15 +1,17 @@
     /// <summary>
     /// {{#description}}{{.}}{{/description}}{{^description}}{{classname}}{{/description}}
     /// </summary>
-    [DataContract]
+    [DataContract(Name = "{{{name}}}")]
     {{#discriminator}}
-    [JsonConverter(typeof(JsonSubtypes), "{{#lambda.camelcase_param}}{{{discriminatorName}}}{{/lambda.camelcase_param}}")]{{#children}}
-    [JsonSubtypes.KnownSubType(typeof({{classname}}), "{{^vendorExtensions.x-discriminator-value}}{{name}}{{/vendorExtensions.x-discriminator-value}}{{#vendorExtensions.x-discriminator-value}}{{{vendorExtensions.x-discriminator-value}}}{{/vendorExtensions.x-discriminator-value}}")]{{/children}}
+    [JsonConverter(typeof(JsonSubtypes), "{{{discriminatorName}}}")]
+    {{#children}}
+    [JsonSubtypes.KnownSubType(typeof({{classname}}), "{{^vendorExtensions.x-discriminator-value}}{{name}}{{/vendorExtensions.x-discriminator-value}}{{#vendorExtensions.x-discriminator-value}}{{{vendorExtensions.x-discriminator-value}}}{{/vendorExtensions.x-discriminator-value}}")]
+    {{/children}}
+    {{#mappedModels}}
+    [JsonSubtypes.KnownSubType(typeof({{{modelName}}}), "{{{mappingName}}}")]
+    {{/mappedModels}}
     {{/discriminator}}
-    {{#generatePropertyChanged}}
-    [ImplementPropertyChanged]
-    {{/generatePropertyChanged}}
-    {{>visibility}} partial class {{classname}} : {{#parent}}{{{parent}}}, {{/parent}} IEquatable<{{classname}}>{{^netStandard}}{{#validatable}}, IValidatableObject{{/validatable}}{{/netStandard}}
+    {{>visibility}} partial class {{classname}} : {{#parent}}{{{parent}}}, {{/parent}}IEquatable<{{classname}}>{{#validatable}}, IValidatableObject{{/validatable}}
     {
         {{#vars}}
         {{#items.isEnum}}
@@ -41,26 +43,23 @@
         /// Initializes a new instance of the <see cref="{{classname}}" /> class.
         /// </summary>
         [JsonConstructorAttribute]
+        {{^isAdditionalPropertiesTrue}}
         protected {{classname}}() { }
+        {{/isAdditionalPropertiesTrue}}
+        {{#isAdditionalPropertiesTrue}}
+        protected {{classname}}()
+        {
+            this.AdditionalProperties = new Dictionary<string, object>();
+        }
+        {{/isAdditionalPropertiesTrue}}
     {{/hasOnlyReadOnly}}
     {{/hasRequired}}
         /// <summary>
         /// Initializes a new instance of the <see cref="{{classname}}" /> class.
         /// </summary>
-        {{#vars}}
-        {{^isReadOnly}}
+        {{#readWriteVars}}
         /// <param name="{{#lambda.camelcase_param}}{{name}}{{/lambda.camelcase_param}}">{{#description}}{{description}}{{/description}}{{^description}}{{#lambda.camelcase_param}}{{name}}{{/lambda.camelcase_param}}{{/description}}{{#required}} (required){{/required}}{{#defaultValue}} (default to {{defaultValue}}){{/defaultValue}}.</param>
-        {{/isReadOnly}}
-        {{/vars}}
-        {{#parent}}
-        {{#parentModel}}
-        {{#allVars}}
-        {{^isReadOnly}}
-        /// <param name="{{#lambda.camelcase_param}}{{name}}{{/lambda.camelcase_param}}">{{#description}}{{description}}{{/description}}{{^description}}{{#lambda.camelcase_param}}{{name}}{{/lambda.camelcase_param}}{{/description}}{{#required}} (required){{/required}}{{#defaultValue}} (default to {{defaultValue}}){{/defaultValue}}.</param>
-        {{/isReadOnly}}
-        {{/allVars}}
-        {{/parentModel}}
-        {{/parent}}
+        {{/readWriteVars}}
     {{#hasOnlyReadOnly}}
         [JsonConstructorAttribute]
     {{/hasOnlyReadOnly}}
@@ -105,6 +104,9 @@
             {{/isReadOnly}}
             {{/isInherited}}
             {{/vars}}
+            {{#isAdditionalPropertiesTrue}}
+            this.AdditionalProperties = new Dictionary<string, object>();
+            {{/isAdditionalPropertiesTrue}}
         }
         
         {{#vars}}
@@ -120,6 +122,15 @@
         {{/isEnum}}
         {{/isInherited}}
         {{/vars}}
+        {{#isAdditionalPropertiesTrue}}
+        /// <summary>
+        /// Gets or Sets additional properties
+        /// </summary>
+        [JsonExtensionData]
+        public IDictionary<string, object> AdditionalProperties { get; set; }
+
+        {{/isAdditionalPropertiesTrue}}
+
         /// <summary>
         /// Returns the string presentation of the object
         /// </summary>
