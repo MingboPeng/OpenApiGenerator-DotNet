@@ -2,7 +2,6 @@ import os
 import sys
 import json
 import shutil
-import re
 
 
 args = sys.argv[1:]
@@ -16,8 +15,7 @@ with open(model_json, "r") as jsonFile:
 
 print(version)
 version = version.replace('v', '')
-version = re.sub(r"[^0-9^.]", "", version)
-print(f'Cleaned version: {version}')
+
 
 config_file = os.path.join(os.getcwd(), '.openapi-config.json')
 
@@ -35,6 +33,14 @@ def cleanup(projectName):
     root = os.path.dirname(os.path.dirname(__file__))
     # remove docs
     target_folder = os.path.join(root, 'docs')
+    if os.path.exists(target_folder):
+        shutil.rmtree(target_folder)
+    # remove Model Api
+    target_folder = os.path.join(root, 'src', projectName, 'Api')
+    if os.path.exists(target_folder):
+        shutil.rmtree(target_folder)
+    # remove Model Client
+    target_folder = os.path.join(root, 'src', projectName, 'Client')
     if os.path.exists(target_folder):
         shutil.rmtree(target_folder)
     # remove Model folder
