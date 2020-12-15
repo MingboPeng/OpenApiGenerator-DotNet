@@ -43,8 +43,7 @@ def get_allof_types(obj, allofList):
 def fix_constructor(read_data):
     regexs = [
         r"(?<=(\w|\d)),\s*,\s*(?=\w)",
-        r"(?<=\s{12})\s*(,\s*)",  # remove "," at begining of line
-        r"(?<=\(\n\s{12})\s*(,)(?=\s\w*.*, \/\/ Required parameters)",  # remove "," at begining of required
+        r"(?<=\(\n\s{12})\s*(,\s*)(?=\w*.*, \/\/ Required parameters)", # remove "," at begining of required
         r"(?<=\/\/ Required parameters\n\s{12})(,\s){1,}(?=\s*\w)",      # remove "," at begining of optional
         r"(?<=\w)(,\s){2,}(?=\s*\/\/ Required parameters\s*\n\s*(\w|,))",
         r"(,\s)+(?=\s*\/\/ Optional parameters)",
@@ -55,7 +54,6 @@ def fix_constructor(read_data):
 
     replace_new = [
         ", ",
-        "",
         "",   # remove "," at begining of required
         "",   # remove "," at begining of optional
         ", ",  # remove one comma of in two or more commas before "//Required parameters"
@@ -101,7 +99,7 @@ def get_enum_parameters(modelJson, mapperJson):
             for obj in all_objs:
                 if 'properties' in obj:
                     props = obj['properties']
-    
+
         class_with_enum_props = {}
         if props == []:
             continue
@@ -161,7 +159,7 @@ def fix_enums_with_defaults(classesData, source_folder):
                 rex = f"(?<={rex_hint})default"
                 data = re.sub(rex, replace, data)
                 print(f"  -{enum_type}: {enum_default_value} in constructor")
-
+            
             # replace enum type properties
             # public SolarDistribution SolarDistribution { get; set; }
             rex = f"public {enum_type}[a-zA-Z\s]+\W*get\W*set;\W*\n"
@@ -200,6 +198,16 @@ def replace_AnyType(read_data):
     return data
     
 
+def add_override_to_type_property(read_data):
+    data = read_data
+    replace_source = "public string Type { get; protected internal set; }"
+    replace_new = "public override string Type { get; protected internal set; }"
+    rex = replace_source
+    if re.findall(rex, data) != []:
+        data = re.sub(rex, replace_new, data)
+    return data
+
+
 def replace_anyof_type(read_data, anyof_types):
     data = read_data
     for items in anyof_types:
@@ -234,6 +242,7 @@ def check_csfiles(source_folder, anyof_types):
         # replace decimal/number to double
         # data = replace_decimal(data)
         data = fix_constructor(data)
+        data = add_override_to_type_property(data)
         f.close()
 
         # save data
@@ -277,6 +286,7 @@ def check_types(source_json_url, mapper_json):
     source_folder = os.path.join(root, 'src', name_space, 'Api')
     if os.path.exists(source_folder):
         check_csfiles(source_folder, all_types)
+
 
 
 def cleanup(projectName):
