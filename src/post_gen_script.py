@@ -43,7 +43,8 @@ def get_allof_types(obj, allofList):
 def fix_constructor(read_data):
     regexs = [
         r"(?<=(\w|\d)),\s*,\s*(?=\w)",
-        r"(?<=\(\n\s{12})\s*(,\s*)(?=\w*.*, \/\/ Required parameters)", # remove "," at begining of required
+        r"(?<=\s{12})\s*(,\s*)",  # remove "," at begining of line
+        r"(?<=\(\n\s{12})\s*(,)(?=\s\w*.*, \/\/ Required parameters)",  # remove "," at begining of required
         r"(?<=\/\/ Required parameters\n\s{12})(,\s){1,}(?=\s*\w)",      # remove "," at begining of optional
         r"(?<=\w)(,\s){2,}(?=\s*\/\/ Required parameters\s*\n\s*(\w|,))",
         r"(,\s)+(?=\s*\/\/ Optional parameters)",
@@ -54,6 +55,7 @@ def fix_constructor(read_data):
 
     replace_new = [
         ", ",
+        "",
         "",   # remove "," at begining of required
         "",   # remove "," at begining of optional
         ", ",  # remove one comma of in two or more commas before "//Required parameters"
@@ -214,7 +216,7 @@ def replace_anyof_type(read_data, anyof_types):
         if len(items) > 0:
             replace_source = "AnyOf%s" % ("".join(items).replace('number', 'double'))
             replace_new = "AnyOf<%s>" % (",".join(items).replace('number', 'double'))
-            rex = "(%s)(?=[ >])" % replace_source # find replace_source only with " "(space) or ">" follows
+            rex = "(%s)(?=[ >)])" % replace_source # find replace_source only with " "(space) or ">" follows
             if re.findall(rex, data) != []:
                 data = re.sub(rex, replace_new, data)
                 print("|---Replacing %s to %s" % (replace_source, replace_new))
@@ -286,6 +288,7 @@ def check_types(source_json_url, mapper_json):
     source_folder = os.path.join(root, 'src', name_space, 'Api')
     if os.path.exists(source_folder):
         check_csfiles(source_folder, all_types)
+
 
 
 
